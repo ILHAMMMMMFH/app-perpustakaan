@@ -1,21 +1,14 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Daftar Buku</title>
-</head>
-<body>
+{{-- File: resources/views/books/index.blade.php --}}
+@extends('layouts.app')
 
+@section('title', 'Daftar Buku')
+
+@section('content')
     <h1>Daftar Buku</h1>
 
-    @if(session('success'))
-        <div>
-            {{ session('success') }}
-        </div>
-    @endif
+    <p><a href="{{ route('books.create') }}" class="btn">+ Tambah Buku</a></p>
 
-    <a href="{{ route('books.create') }}">Tambah Buku</a>
-
-    <table border="1" cellpadding="8" cellspacing="0">
+    <table>
         <thead>
             <tr>
                 <th>ID</th>
@@ -23,40 +16,40 @@
                 <th>Penulis</th>
                 <th>Penerbit</th>
                 <th>Tahun</th>
-                <th>ISBN</th>
                 <th>Stok</th>
                 <th>Kategori</th>
                 <th>Aksi</th>
             </tr>
         </thead>
-
         <tbody>
-            @foreach($books as $book)
+            @forelse ($books as $book)
                 <tr>
                     <td>{{ $book['id'] }}</td>
                     <td>{{ $book['judul'] }}</td>
                     <td>{{ $book['penulis'] }}</td>
                     <td>{{ $book['penerbit'] }}</td>
                     <td>{{ $book['tahun_terbit'] }}</td>
-                    <td>{{ $book['isbn'] }}</td>
                     <td>{{ $book['stok'] }}</td>
                     <td>{{ $book['kategori'] }}</td>
                     <td>
                         <a href="{{ route('books.show', $book['id']) }}">Detail</a>
+                        |
                         <a href="{{ route('books.edit', $book['id']) }}">Edit</a>
-
-                        <form action="{{ route('books.destroy', $book['id']) }}"
-                              method="POST"
-                              style="display:inline;">
+                        |
+                        <form class="inline" action="{{ route('books.destroy', $book['id']) }}" method="POST">
                             @csrf
                             @method('DELETE')
                             <button type="submit">Hapus</button>
                         </form>
                     </td>
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="8">Belum ada data buku.</td>
+                </tr>
+            @endforelse
         </tbody>
     </table>
 
-</body>
-</html>
+    <p><em>Catatan: data di atas masih data dummy (array statis di Controller), belum dari database. Migration &amp; Model Eloquent baru dibuat di Pertemuan 5.</em></p>
+@endsection

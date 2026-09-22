@@ -1,21 +1,14 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Daftar Kategori</title>
-</head>
-<body>
+{{-- File: resources/views/categories/index.blade.php --}}
+@extends('layouts.app')
 
+@section('title', 'Daftar Kategori')
+
+@section('content')
     <h1>Daftar Kategori</h1>
 
-    @if(session('success'))
-        <div>
-            {{ session('success') }}
-        </div>
-    @endif
+    <p><a href="{{ route('categories.create') }}" class="btn">+ Tambah Kategori</a></p>
 
-    <a href="{{ route('categories.create') }}">Tambah Kategori</a>
-
-    <table border="1" cellpadding="8" cellspacing="0">
+    <table>
         <thead>
             <tr>
                 <th>ID</th>
@@ -24,30 +17,29 @@
                 <th>Aksi</th>
             </tr>
         </thead>
-
         <tbody>
-            @foreach($categories as $category)
+            @forelse ($categories as $category)
                 <tr>
                     <td>{{ $category['id'] }}</td>
                     <td>{{ $category['nama_kategori'] }}</td>
-                    <td>{{ $category['deskripsi'] }}</td>
+                    <td>{{ $category['deskripsi'] ?? '-' }}</td>
                     <td>
-                        <a href="{{ route('categories.edit', $category['id']) }}">
-                            Edit
-                        </a>
-
-                        <form action="{{ route('categories.destroy', $category['id']) }}"
-                              method="POST"
-                              style="display:inline;">
+                        <a href="{{ route('categories.edit', $category['id']) }}">Edit</a>
+                        |
+                        <form class="inline" action="{{ route('categories.destroy', $category['id']) }}" method="POST">
                             @csrf
                             @method('DELETE')
                             <button type="submit">Hapus</button>
                         </form>
                     </td>
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="4">Belum ada data kategori.</td>
+                </tr>
+            @endforelse
         </tbody>
     </table>
 
-</body>
-</html>
+    <p><em>Catatan: data di atas masih data dummy (array statis di Controller), belum dari database. Migration &amp; Model Eloquent baru dibuat di Pertemuan 5.</em></p>
+@endsection
