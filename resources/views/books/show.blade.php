@@ -14,7 +14,7 @@
     <p><strong>Tahun Terbit:</strong> {{ $book['tahun_terbit'] }}</p>
     <p><strong>ISBN:</strong> {{ $book['isbn'] }}</p>
     <p><strong>Stok:</strong> {{ $book['stok'] }}</p>
-    <p><strong>Kategori:</strong> {{ $book['kategori'] }}</p>
+    <p><strong>ID Kategori:</strong> {{ $book['category_id'] }}</p>
 
     <a href="{{ route('books.index') }}">Kembali</a>
 
