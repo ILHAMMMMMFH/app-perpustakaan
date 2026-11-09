@@ -7,23 +7,13 @@ use App\Http\Controllers\MemberController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('books.index');
 });
 
+Route::resource('categories', CategoryController::class);
 Route::resource('books', BookController::class);
-
-Route::resource('categories', CategoryController::class)
-    ->except(['show']);
-
 Route::resource('members', MemberController::class);
 
+// Rute Tugas 1: Kembalikan Buku
+Route::patch('/loans/{id}/kembalikan', [LoanController::class, 'kembalikan'])->name('loans.kembalikan');
 Route::resource('loans', LoanController::class);
-
-Route::put('/loans/{id}/kembalikan', [LoanController::class, 'kembalikan'])
-    ->name('loans.kembalikan');
-
-    Route::prefix('admin')->group(function () {
-    Route::get('/info', function () {
-        return 'Halaman Admin';
-    });
-});

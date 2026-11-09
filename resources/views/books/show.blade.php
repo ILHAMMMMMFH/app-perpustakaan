@@ -1,22 +1,40 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
+    <meta charset="UTF-8">
     <title>Detail Buku</title>
+    <style>
+        body { font-family: sans-serif; margin: 40px; max-width: 600px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 16px; }
+        th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
+        th { width: 160px; background: #f3f4f6; }
+    </style>
 </head>
 <body>
-
     <h1>Detail Buku</h1>
+    <p><a href="{{ route('books.index') }}">&larr; Kembali ke daftar buku</a></p>
 
-    <p><strong>ID:</strong> {{ $book['id'] }}</p>
-    <p><strong>Judul:</strong> {{ $book['judul'] }}</p>
-    <p><strong>Penulis:</strong> {{ $book['penulis'] }}</p>
-    <p><strong>Penerbit:</strong> {{ $book['penerbit'] }}</p>
-    <p><strong>Tahun Terbit:</strong> {{ $book['tahun_terbit'] }}</p>
-    <p><strong>ISBN:</strong> {{ $book['isbn'] }}</p>
-    <p><strong>Stok:</strong> {{ $book['stok'] }}</p>
-    <p><strong>ID Kategori:</strong> {{ $book['category_id'] }}</p>
-
-    <a href="{{ route('books.index') }}">Kembali</a>
-
+    <table>
+        <tr>
+            <th>ID</th>
+            <td>{{ $book['id'] }}</td>
+        </tr>
+        <tr>
+            <th>Judul</th>
+            <td>{{ $book['judul'] }}</td>
+        </tr>
+        <tr>
+            <th>Penulis</th>
+            <td>{{ $book['penulis'] }}</td>
+        </tr>
+        <tr>
+            <th>Kategori</th>
+            <td>{{ $book['category']['nama_kategori'] ?? $book['category']['name'] ?? '-' }}</td>
+        </tr>
+        <tr>
+            <th>Stok</th>
+            <td>{{ $book['stok'] }}</td>
+        </tr>
+    </table>
 </body>
 </html>

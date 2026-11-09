@@ -1,37 +1,48 @@
-{{-- File: resources/views/layouts/app.blade.php --}}
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>@yield('title', 'Perpustakaan Digital Kampus')</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@yield('title', 'Aplikasi Perpustakaan')</title>
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: sans-serif; margin: 0; color: #1f2937; }
-        nav { background: #1e3a8a; padding: 14px 40px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; }
-        nav .brand { color: #fff; font-weight: bold; font-size: 18px; }
-        nav ul { list-style: none; display: flex; gap: 20px; margin: 0; padding: 0; }
-        nav ul li a { color: #cbd5e1; text-decoration: none; padding: 6px 4px; }
-        nav ul li a.active { color: #fff; font-weight: bold; border-bottom: 2px solid #fff; }
-        main { max-width: 900px; margin: 0 auto; padding: 30px 40px; }
-        table { border-collapse: collapse; width: 100%; margin-top: 16px; }
-        th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
-        .alert-success { background: #d1fae5; color: #065f46; padding: 10px 14px; border-radius: 4px; margin-bottom: 16px; }
-        .btn { display: inline-block; padding: 6px 14px; background: #2563eb; color: #fff; text-decoration: none; border-radius: 4px; border: none; cursor: pointer; }
-        form.inline { display: inline; }
-        footer { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; border-top: 1px solid #e5e7eb; margin-top: 40px; }
+        body { font-family: sans-serif; margin: 0; padding: 0; background: #f9fafb; color: #111827; }
+        nav { background: #1e293b; padding: 12px 24px; display: flex; gap: 16px; align-items: center; }
+        nav a { color: #f8fafc; text-decoration: none; font-weight: 500; font-size: 14px; }
+        nav a:hover { text-decoration: underline; }
+        .container { max-width: 1000px; margin: 32px auto; padding: 0 16px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden; margin-top: 16px; }
+        th, td { padding: 10px 14px; border-bottom: 1px solid #e5e7eb; text-align: left; font-size: 14px; }
+        th { background: #f1f5f9; font-weight: 600; }
+        .btn { display: inline-block; padding: 6px 14px; background: #2563eb; color: #fff; text-decoration: none; border-radius: 4px; font-size: 14px; border: none; cursor: pointer; }
+        .btn:hover { background: #1d4ed8; }
+        .btn-success { background: #059669; }
+        .btn-success:hover { background: #047857; }
+        .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; }
+        .inline { display: inline; }
+        
+        /* Tugas 2 - Badge status berwarna */
+        .badge { display: inline-block; padding: 3px 8px; font-size: 12px; border-radius: 4px; font-weight: bold; }
+        .badge-success { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .badge-warning { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .badge-danger { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
     </style>
 </head>
 <body>
-    @include('partials.navbar')
+    <nav>
+        <a href="{{ route('books.index') }}">Buku</a>
+        <a href="{{ route('categories.index') }}">Kategori</a>
+        <a href="{{ route('members.index') }}">Anggota</a>
+        <a href="{{ route('loans.index') }}">Peminjaman</a>
+    </nav>
 
-    <main>
-        @include('partials.alert')
+    <div class="container">
+        @if (session('success'))
+            <div class="alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
 
         @yield('content')
-    </main>
-
-    <footer>
-        &copy; {{ date('Y') }} Sistem Perpustakaan Digital Kampus
-    </footer>
+    </div>
 </body>
 </html>
