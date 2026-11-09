@@ -4,15 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\Book;
 use App\Models\Loan;
+use App\Models\LoanItem;
 use App\Models\Member;
-use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class LoanController extends Controller
 {
     public function index()
     {
-        $loans = Loan::with(['member', 'user', 'loanItems.book'])->paginate(10);
+        $loans = Loan::with(['member', 'loanItems.book'])->latest()->paginate(10);
 
         return view('loans.index', compact('loans'));
     }
@@ -21,99 +22,109 @@ class LoanController extends Controller
     {
         $members = Member::all();
         $books = Book::all();
-        $users = User::all();
 
-        return view('loans.create', compact('members', 'books', 'users'));
+        return view('loans.create', compact('members', 'books'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'member_id' => 'required|integer|exists:members,id',
-            'user_id' => 'required|integer|exists:users,id',
             'tanggal_pinjam' => 'required|date',
             'tanggal_kembali' => 'required|date|after_or_equal:tanggal_pinjam',
             'book_ids' => 'required|array|min:1',
             'book_ids.*' => 'integer|exists:books,id',
-        ], [
-            'member_id.required' => 'Anggota wajib dipilih.',
-            'user_id.required' => 'Petugas wajib dipilih.',
-            'tanggal_pinjam.required' => 'Tanggal pinjam wajib diisi.',
-            'tanggal_kembali.required' => 'Tanggal kembali wajib diisi.',
-            'tanggal_kembali.after_or_equal' => 'Tanggal kembali tidak boleh sebelum tanggal pinjam.',
-            'book_ids.required' => 'Minimal pilih satu buku.',
         ]);
 
-        $loan = Loan::create([
-            'member_id' => $validated['member_id'],
-            'user_id' => $validated['user_id'],
-            'tanggal_pinjam' => $validated['tanggal_pinjam'],
-            'tanggal_kembali' => $validated['tanggal_kembali'],
-            'status' => 'dipinjam',
-        ]);
+        DB::transaction(function () use ($validated) {
+            $loan = Loan::create([
+                'loan_code' => 'L-' . strtoupper(uniqid()),
+                'member_id' => $validated['member_id'],
+                'user_id' => auth()->id(),
+                'loan_date' => $validated['tanggal_pinjam'],
+                'due_date' => $validated['tanggal_kembali'],
+                'status' => 'dipinjam',
+            ]);
 
-        foreach ($validated['book_ids'] as $bookId) {
-            $loan->loanItems()->create(['book_id' => $bookId]);
-        }
+            foreach ($validated['book_ids'] as $bookId) {
+                LoanItem::create([
+                    'loan_id' => $loan->id,
+                    'book_id' => $bookId,
+                    'quantity' => 1,
+                ]);
+
+                Book::where('id', $bookId)->decrement('stock', 1);
+            }
+        });
 
         return redirect()->route('loans.index')
-            ->with('success', 'Transaksi peminjaman berhasil dibuat.');
+            ->with('success', 'Transaksi peminjaman berhasil disimpan.');
     }
 
-    public function show(string $id)
+    public function show(Loan $loan)
     {
-        $loan = Loan::with(['member', 'user', 'loanItems.book'])->findOrFail($id);
+        $loan->load(['member', 'loanItems.book']);
 
         return view('loans.show', compact('loan'));
     }
 
-    public function edit(string $id)
+    public function edit(Loan $loan)
     {
-        $loan = Loan::with(['member', 'user', 'loanItems.book'])->findOrFail($id);
+        $members = Member::all();
+        $books = Book::all();
 
-        return view('loans.edit', compact('loan'));
+        return view('loans.edit', compact('loan', 'members', 'books'));
     }
 
-    public function update(Request $request, string $id)
+    public function update(Request $request, Loan $loan)
     {
-        $loan = Loan::findOrFail($id);
-
         $validated = $request->validate([
-            'tanggal_kembali' => 'required|date|after_or_equal:tanggal_pinjam',
-            'status' => 'required|in:dipinjam,dikembalikan,terlambat',
-        ], [
-            'tanggal_kembali.required' => 'Tanggal kembali wajib diisi.',
-            'tanggal_kembali.after_or_equal' => 'Tanggal kembali tidak boleh sebelum tanggal pinjam.',
-            'status.required' => 'Status transaksi wajib dipilih.',
+            'member_id' => 'required|integer|exists:members,id',
+            'loan_date' => 'required|date',
+            'due_date' => 'required|date|after_or_equal:loan_date',
+            'status' => 'required|in:dipinjam,kembali',
         ]);
 
         $loan->update($validated);
 
         return redirect()->route('loans.index')
-            ->with('success', 'Transaksi peminjaman berhasil diperbarui.');
+            ->with('success', 'Data peminjaman berhasil diperbarui.');
     }
 
-    public function destroy(string $id)
+    public function destroy(Loan $loan)
     {
-        $loan = Loan::findOrFail($id);
-        $loan->loanItems()->delete();
-        $loan->delete();
+        DB::transaction(function () use ($loan) {
+            if ($loan->status === 'dipinjam') {
+                foreach ($loan->loanItems as $item) {
+                    Book::where('id', $item->book_id)->increment('stock', $item->quantity);
+                }
+            }
+            $loan->loanItems()->delete();
+            $loan->delete();
+        });
 
         return redirect()->route('loans.index')
-            ->with('success', 'Transaksi peminjaman berhasil dihapus.');
+            ->with('success', 'Data peminjaman berhasil dihapus.');
     }
 
-    // Tugas 1: Logika Fitur Kembalikan Buku
-    public function kembalikan(string $id)
+    public function kembalikan($id)
     {
-        $loan = Loan::findOrFail($id);
+        $loan = Loan::with('loanItems')->findOrFail($id);
 
-        $loan->update([
-            'status' => 'dikembalikan',
-            'tanggal_dikembalikan' => now()->toDateString(),
-        ]);
+        if ($loan->status !== 'kembali') {
+            DB::transaction(function () use ($loan) {
+                $loan->update([
+                    'status' => 'kembali',
+                    'return_date' => now()->toDateString(),
+                ]);
+
+                foreach ($loan->loanItems as $item) {
+                    Book::where('id', $item->book_id)->increment('stock', $item->quantity);
+                }
+            });
+        }
 
         return redirect()->route('loans.index')
-            ->with('success', "Buku pada transaksi #{$loan->id} berhasil dikembalikan.");
+            ->with('success', 'Buku telah berhasil dikembalikan.');
     }
 }
