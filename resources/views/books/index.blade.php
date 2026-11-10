@@ -13,10 +13,8 @@
                 <th>ID</th>
                 <th>Judul</th>
                 <th>Penulis</th>
-                <th>Penerbit</th>
-                <th>Tahun</th>
+                <th>Kategori</th>
                 <th>Stok</th>
-                <th>ID Kategori</th>
                 <th>Aksi</th>
             </tr>
         </thead>
@@ -26,31 +24,29 @@
                     <td>{{ $book['id'] }}</td>
                     <td>{{ $book['judul'] }}</td>
                     <td>{{ $book['penulis'] }}</td>
-                    <td>{{ $book['penerbit'] }}</td>
-                    <td>{{ $book['tahun_terbit'] }}</td>
+                    <td>{{ $book['category']['nama_kategori'] ?? $book['category']['name'] ?? '-' }}</td>
                     <td>{{ $book['stok'] }}</td>
-                    <td>{{ $book['category_id'] }}</td>
                     <td>
                         <a href="{{ route('books.show', $book['id']) }}">Detail</a>
                         |
                         <a href="{{ route('books.edit', $book['id']) }}">Edit</a>
                         |
-                        <form class="inline" action="{{ route('books.destroy', $book['id']) }}" method="POST">
+                        <form class="inline" action="{{ route('books.destroy', $book['id']) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus buku ini?')">
                             @csrf
                             @method('DELETE')
-                            <button type="submit">Hapus</button>
+                            <button type="submit" style="background:none; border:none; color:#dc2626; cursor:pointer; padding:0; text-decoration:underline;">Hapus</button>
                         </form>
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8">Belum ada data buku.</td>
+                    <td colspan="6">Belum ada data buku.</td>
                 </tr>
             @endforelse
         </tbody>
     </table>
 
-    {{ $books->links() }}
-
-    <p><em>Catatan: kolom kategori masih menampilkan ID. Menampilkan nama kategori memerlukan Eloquent Relationship, dipelajari di Pertemuan 7.</em></p>
+    <div style="margin-top: 16px;">
+        {{ $books->links() }}
+    </div>
 @endsection
